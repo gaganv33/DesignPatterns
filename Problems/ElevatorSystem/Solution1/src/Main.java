@@ -5,9 +5,10 @@ public class Main {
         ElevatorManager elevatorManager = ElevatorManager.getInstance();
         elevatorManager.addElevator(new Elevator(1));
         elevatorManager.addElevator(new Elevator(2));
+        elevatorManager.addElevator(new Elevator(3));
         Random random = new Random();
 
-        for(int i = 0; i < 3; i++) {
+        for(int i = 0; i < 10; i++) {
             int source = random.nextInt(11);
             int destination = random.nextInt(11);
             if(source != destination) {

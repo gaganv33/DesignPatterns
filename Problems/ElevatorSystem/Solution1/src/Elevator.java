@@ -27,7 +27,7 @@ public class Elevator extends Thread {
         return currentFloor;
     }
 
-    public void setCurrentFloor(int currentFloor) {
+    private void setCurrentFloor(int currentFloor) {
         this.currentFloor = currentFloor;
     }
 
@@ -35,7 +35,7 @@ public class Elevator extends Thread {
         return elevatorDirection;
     }
 
-    public void setElevatorDirection(ElevatorDirection elevatorDirection) {
+    private void setElevatorDirection(ElevatorDirection elevatorDirection) {
         this.elevatorDirection = elevatorDirection;
     }
 
@@ -43,7 +43,7 @@ public class Elevator extends Thread {
         return elevatorStatus;
     }
 
-    public void setElevatorStatus(ElevatorStatus elevatorStatus) {
+    private void setElevatorStatus(ElevatorStatus elevatorStatus) {
         this.elevatorStatus = elevatorStatus;
     }
 
@@ -59,8 +59,10 @@ public class Elevator extends Thread {
         return pendingJobs;
     }
 
-    public synchronized boolean getIsIdleElevator() {
-        return this.elevatorStatus.equals(ElevatorStatus.IDLE);
+    public boolean getIsIdleElevator() {
+        synchronized (this) {
+            return this.elevatorStatus.equals(ElevatorStatus.IDLE);
+        }
     }
 
     @Override
@@ -235,33 +237,7 @@ public class Elevator extends Thread {
 
     public int getWaitingTimeForGivenRequest(Request request) {
         synchronized (this) {
-            if(this.elevatorStatus.equals(ElevatorStatus.IDLE)) {
-                return Math.abs(request.source() - this.currentFloor);
-            } else {
-                if(this.elevatorDirection.equals(ElevatorDirection.UP)) {
-                    if(this.currentFloor < request.source()) {
-                        return (request.source() - this.currentFloor);
-                    } else {
-                        if(upRequests.isEmpty()) return 0;
-                        else {
-                            List<Request> upListRequest = new ArrayList<>(upRequests);
-                            int lastFloor = upListRequest.get(upListRequest.size() - 1).destination();
-                            return (lastFloor - request.source());
-                        }
-                    }
-                } else {
-                    if(this.currentFloor > request.source()) {
-                        return (this.currentFloor - request.source());
-                    } else {
-                        if(downRequests.isEmpty()) return 0;
-                         else {
-                            List<Request> downListRequest = new ArrayList<>(downRequests);
-                            int lastFloor = downListRequest.get(downListRequest.size() - 1).destination();
-                            return (this.currentFloor - lastFloor);
-                        }
-                    }
-                }
-            }
+            return Math.abs(request.source() - this.currentFloor);
         }
     }
 }

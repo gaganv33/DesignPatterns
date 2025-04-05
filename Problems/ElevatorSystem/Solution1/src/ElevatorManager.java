@@ -3,18 +3,19 @@ import java.util.List;
 
 public class ElevatorManager {
     private static volatile ElevatorManager instance;
-
     private final List<Elevator> elevators;
+    private ElevatorStrategy elevatorStrategy;
 
-    private ElevatorManager() {
+    private ElevatorManager(ElevatorStrategy elevatorStrategy) {
         this.elevators = new ArrayList<>();
+        this.elevatorStrategy = elevatorStrategy;
     }
 
     public static ElevatorManager getInstance() {
         if(instance == null) {
             synchronized (ElevatorManager.class) {
                 if(instance == null) {
-                    instance = new ElevatorManager();
+                    instance = new ElevatorManager(new NearestElevatorStrategy());
                 }
             }
         }
@@ -44,6 +45,10 @@ public class ElevatorManager {
         return false;
     }
 
+    public void setElevatorStrategy(ElevatorStrategy elevatorStrategy) {
+        this.elevatorStrategy = elevatorStrategy;
+    }
+
     public void addRequest(Request request) {
         Elevator elevator = findOptimalElevator(request);
         if(request.source() < request.destination()) {
@@ -54,22 +59,6 @@ public class ElevatorManager {
     }
 
     private Elevator findOptimalElevator(Request request) {
-        int waiting_time = Integer.MAX_VALUE;
-        Elevator elevator = null;
-
-        for(var elevator1 : elevators) {
-            if(elevator1.getIsIdleElevator()) {
-                System.out.println("Found an idle elevator " + elevator1.getElevatorId() + " for " + request.source() + " " + request.destination());
-                return elevator1;
-            }
-            int value = elevator1.getWaitingTimeForGivenRequest(request);
-            if(value < waiting_time) {
-                waiting_time = value;
-                elevator = elevator1;
-            }
-        }
-        assert elevator != null;
-        System.out.println("Did not find an idle elevator " + elevator.getElevatorId() + " for " + request.source() + " " + request.destination());
-        return elevator;
+        return elevatorStrategy.findOptimalElevator(elevators, request);
     }
 }
